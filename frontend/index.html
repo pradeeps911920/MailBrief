@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MailBrief</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        .tab-active { border-bottom: 2px solid #2563eb; color: #2563eb; font-weight: 600; }
+        .tab-inactive { color: #6b7280; }
+        .tab-inactive:hover { color: #374151; }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen text-gray-800">
+    <div class="max-w-5xl mx-auto p-6">
+        <!-- Header -->
+        <header class="flex justify-between items-center mb-6 border-b border-gray-200 pb-4">
+            <div>
+                <h1 class="text-3xl font-bold text-blue-600 tracking-tight">📬 MailBrief</h1>
+                <p class="text-gray-500 text-sm mt-1">One brief. Every important email.</p>
+            </div>
+            <div class="flex items-center space-x-4">
+                <div id="auth-status" class="text-sm font-medium text-gray-500 flex items-center">
+                    <span class="w-2 h-2 rounded-full bg-gray-300 mr-2"></span> Not Connected
+                </div>
+                <button id="authBtn" onclick="loginGoogle()" class="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-md shadow-sm hover:bg-gray-50 text-sm font-medium transition hidden">
+                    Connect Gmail
+                </button>
+                <button id="refreshBtn" onclick="generateBrief()" class="bg-blue-600 text-white px-4 py-2 rounded-md shadow-sm hover:bg-blue-700 text-sm font-medium transition flex items-center">
+                    Process New Emails
+                </button>
+            </div>
+        </header>
+
+        <!-- Stats -->
+        <div id="stats" class="grid grid-cols-4 gap-4 mb-8 hidden">
+            <div class="bg-white p-5 rounded-lg shadow-sm border border-gray-100 flex flex-col justify-center">
+                <div class="text-3xl font-bold text-gray-800" id="stat-total">0</div>
+                <div class="text-xs text-gray-500 uppercase tracking-wider font-semibold mt-1">Processed</div>
+            </div>
+            <div class="bg-white p-5 rounded-lg shadow-sm border border-gray-100 flex flex-col justify-center">
+                <div class="text-3xl font-bold text-red-600" id="stat-important">0</div>
+                <div class="text-xs text-gray-500 uppercase tracking-wider font-semibold mt-1">Important</div>
+            </div>
+            <div class="bg-white p-5 rounded-lg shadow-sm border border-gray-100 flex flex-col justify-center">
+                <div class="text-3xl font-bold text-orange-600" id="stat-action">0</div>
+                <div class="text-xs text-gray-500 uppercase tracking-wider font-semibold mt-1">Actions</div>
+            </div>
+            <div class="bg-white p-5 rounded-lg shadow-sm border border-gray-100 flex flex-col justify-center">
+                <div class="text-3xl font-bold text-purple-600" id="stat-deadline">0</div>
+                <div class="text-xs text-gray-500 uppercase tracking-wider font-semibold mt-1">Deadlines</div>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div id="filters" class="flex space-x-6 border-b border-gray-200 mb-6 hidden">
+            <button onclick="setFilter('all')" id="tab-all" class="pb-3 px-1 tab-active text-sm">All</button>
+            <button onclick="setFilter('high')" id="tab-high" class="pb-3 px-1 tab-inactive text-sm">Important</button>
+            <button onclick="setFilter('action')" id="tab-action" class="pb-3 px-1 tab-inactive text-sm">Actions</button>
+            <button onclick="setFilter('deadline')" id="tab-deadline" class="pb-3 px-1 tab-inactive text-sm">Deadlines</button>
+        </div>
+
+        <!-- System State / Loading -->
+        <div id="loading" class="hidden py-16">
+            <div class="max-w-md mx-auto text-center space-y-4">
+                <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600 mx-auto"></div>
+                <p id="loading-text" class="text-gray-600 font-medium">Fetching your inbox...</p>
+            </div>
+        </div>
+
+        <div id="brief-container" class="space-y-8">
+            <div class="text-center text-gray-500 py-20 bg-white rounded-lg border border-dashed border-gray-300" id="empty-state">
+                <div class="text-4xl mb-3">✉️</div>
+                <p class="text-lg font-medium text-gray-700 mb-1">Good evening 👋</p>
+                <p>Click "Process New Emails" to analyze your inbox and generate today's brief.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentEmails = [];
+        let currentFilter = 'all';
+
+        // Secure text creation to prevent XSS
+        function createSafeText(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        async function checkAuthStatus() {
+            try {
+                const res = await fetch('/auth/status');
+                const data = await res.json();
+                const statusDiv = document.getElementById('auth-status');
+                const authBtn = document.getElementById('authBtn');
+                
+                if (data.connected) {
+                    statusDiv.innerHTML = `<span class="w-2 h-2 rounded-full bg-green-500 mr-2"></span> ${createSafeText(data.email)}`;
+                    authBtn.classList.add('hidden');
+                    loadTodayBrief(); // Auto-load if connected
+                } else {
+                    statusDiv.innerHTML = `<span class="w-2 h-2 rounded-full bg-red-500 mr-2"></span> Not Connected`;
+                    authBtn.classList.remove('hidden');
+                }
+            } catch (e) {
+                console.error("Auth status check failed", e);
+            }
+        }
+
+        async function loginGoogle() {
+            try {
+                const res = await fetch('/auth/login');
+                const data = await res.json();
+                if (data.auth_url) {
+                    window.location.href = data.auth_url;
+                }
+            } catch (e) {
+                alert("Failed to initialize Google Login.");
+            }
+        }
+
+        async function generateBrief() {
+            setLoadingState("Processing new emails (this may take a minute)...");
+            try {
+                const res = await fetch('/briefing/generate', { method: 'POST' });
+                if (res.status === 401) {
+                    alert("Please Connect Gmail first.");
+                    return;
+                }
+                const data = await res.json();
+                console.log(data.message);
+                loadTodayBrief();
+            } catch (e) {
+                document.getElementById('brief-container').innerHTML = `<div class="text-red-500 text-center py-8">Failed to process emails. Check backend logs.</div>`;
+            } finally {
+                hideLoadingState();
+            }
+        }
+
+        async function loadTodayBrief() {
+            setLoadingState("Loading today's brief...");
+            try {
+                const res = await fetch('/briefing/today');
+                const data = await res.json();
+                if (data.brief) {
+                    currentEmails = data.brief;
+                    updateStats(data.stats);
+                    renderBrief();
+                }
+            } catch (e) {
+                document.getElementById('brief-container').innerHTML = `<div class="text-red-500 text-center py-8">Failed to load brief.</div>`;
+            } finally {
+                hideLoadingState();
+            }
+        }
+
+        function setLoadingState(msg) {
+            document.getElementById('loading').classList.remove('hidden');
+            document.getElementById('loading-text').innerText = msg;
+            document.getElementById('empty-state')?.classList.add('hidden');
+            document.getElementById('brief-container').innerHTML = '';
+        }
+
+        function hideLoadingState() {
+            document.getElementById('loading').classList.add('hidden');
+        }
+
+        function updateStats(stats) {
+            if (!stats || Object.keys(stats).length === 0) return;
+            document.getElementById('stats').classList.remove('hidden');
+            document.getElementById('filters').classList.remove('hidden');
+            
+            document.getElementById('stat-total').innerText = stats.emails_processed || 0;
+            document.getElementById('stat-important').innerText = stats.important || 0;
+            document.getElementById('stat-action').innerText = stats.actions || 0;
+            document.getElementById('stat-deadline').innerText = stats.deadlines || 0;
+        }
+
+        function setFilter(filterType) {
+            currentFilter = filterType;
+            ['all', 'high', 'action', 'deadline'].forEach(f => {
+                document.getElementById(`tab-${f}`).className = `pb-3 px-1 text-sm ${f === filterType ? 'tab-active' : 'tab-inactive'}`;
+            });
+            renderBrief();
+        }
+
+        function renderBrief() {
+            const container = document.getElementById('brief-container');
+            container.innerHTML = '';
+            
+            if (currentEmails.length === 0) {
+                container.innerHTML = `<div class="text-center text-gray-500 py-12 bg-white rounded-lg shadow-sm border border-gray-100">No emails processed today.</div>`;
+                return;
+            }
+
+            // Apply filters
+            let filtered = currentEmails;
+            if (currentFilter === 'high') {
+                filtered = currentEmails.filter(e => e.importance === 'high');
+            } else if (currentFilter === 'action') {
+                filtered = currentEmails.filter(e => e.action_required);
+            } else if (currentFilter === 'deadline') {
+                filtered = currentEmails.filter(e => e.deadline);
+            }
+
+            if (filtered.length === 0) {
+                container.innerHTML = `<div class="text-center text-gray-500 py-12">No emails match this filter.</div>`;
+                return;
+            }
+
+            // Check for AI fallback
+            const hasFallback = filtered.some(e => e.summary === "AI analysis unavailable.");
+            if (hasFallback) {
+                container.innerHTML += `
+                    <div class="mb-6 bg-yellow-50 border-l-4 border-yellow-400 p-4">
+                        <div class="flex">
+                            <div class="flex-shrink-0">⚠️</div>
+                            <div class="ml-3">
+                                <p class="text-sm text-yellow-700">
+                                    <strong>AI analysis unavailable for some emails.</strong> Please check your Gemini API key in the backend configuration.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // High Priority Needs Attention Section (Only on "All" tab)
+            if (currentFilter === 'all') {
+                const needsAttention = currentEmails.filter(e => e.importance === 'high' || e.action_required);
+                if (needsAttention.length > 0) {
+                    let attentionHtml = `
+                        <div class="mb-10 bg-red-50 border border-red-100 rounded-xl p-5 shadow-sm">
+                            <h2 class="text-lg font-bold text-red-800 mb-3 flex items-center">🔴 Needs Your Attention</h2>
+                            <ul class="space-y-2">
+                    `;
+                    needsAttention.forEach(e => {
+                        let bulletText = e.action || e.summary || e.subject;
+                        if (bulletText.startsWith('[')) {
+                             bulletText = bulletText.replace(/^\[\d+ related emails\]\s*/, '');
+                        }
+                        attentionHtml += `<li class="text-red-900 text-sm flex items-start"><span class="mr-2 mt-0.5">•</span> <span>${createSafeText(bulletText)}</span></li>`;
+                    });
+                    attentionHtml += `</ul></div>`;
+                    container.innerHTML += attentionHtml;
+                }
+            }
+
+            // Group by category
+            const categories = {};
+            filtered.forEach(email => {
+                const cat = email.category || 'General';
+                if (!categories[cat]) categories[cat] = [];
+                categories[cat].push(email);
+            });
+
+            for (const [category, emails] of Object.entries(categories)) {
+                let catHTML = `
+                    <div class="mb-8">
+                        <div class="flex items-center mb-4">
+                            <h2 class="text-xl font-bold text-gray-800 capitalize">${createSafeText(category)}</h2>
+                            <span class="ml-3 bg-gray-100 text-gray-600 py-0.5 px-2 rounded-full text-xs font-semibold">${emails.length}</span>
+                        </div>
+                        <div class="space-y-4">
+                `;
+
+                emails.forEach(email => {
+                    let tags = '';
+                    const isHigh = email.importance === 'high';
+                    const isMedium = email.importance === 'medium';
+                    
+                    if (isHigh) {
+                        tags += `<span class="bg-red-100 text-red-800 border border-red-200 text-xs font-bold px-2.5 py-0.5 rounded-full mr-2">High Priority</span>`;
+                    } else if (isMedium) {
+                        tags += `<span class="bg-yellow-100 text-yellow-800 border border-yellow-200 text-xs font-semibold px-2.5 py-0.5 rounded-full mr-2">Medium</span>`;
+                    }
+                    
+                    if (email.action_required) {
+                        tags += `<span class="bg-orange-100 text-orange-800 border border-orange-200 text-xs font-bold px-2.5 py-0.5 rounded-full mr-2 flex items-center inline-flex">Action Required</span>`;
+                    }
+                    
+                    if (email.deadline) {
+                        tags += `<span class="bg-purple-100 text-purple-800 border border-purple-200 text-xs font-bold px-2.5 py-0.5 rounded-full mr-2 flex items-center inline-flex">📅 ${createSafeText(email.deadline)}</span>`;
+                    }
+
+                    const cardBorder = isHigh ? 'border-red-200 shadow-md' : 'border-gray-200 shadow-sm';
+                    const titleColor = isHigh ? 'text-gray-900' : 'text-gray-800';
+                    
+                    // Format thread count
+                    let summaryText = email.summary || '';
+                    let threadBadge = '';
+                    const threadMatch = summaryText.match(/^\[(\d+) related emails\]\s*/);
+                    if (threadMatch) {
+                        threadBadge = `<span class="bg-blue-50 text-blue-700 text-xs font-medium px-2 py-0.5 rounded border border-blue-100 mb-2 inline-block">${threadMatch[1]} related emails</span>`;
+                        summaryText = summaryText.replace(threadMatch[0], '');
+                    }
+
+                    catHTML += `
+                        <div class="bg-white p-5 rounded-xl border ${cardBorder} transition hover:shadow-md">
+                            ${threadBadge}
+                            <div class="flex justify-between items-start mb-3">
+                                <div class="pr-4">
+                                    <h3 class="font-bold text-lg ${titleColor}">${createSafeText(email.subject)}</h3>
+                                    <p class="text-sm text-gray-500 mt-0.5">${createSafeText(email.sender)}</p>
+                                </div>
+                                <div class="flex flex-wrap justify-end gap-y-2 pl-2 whitespace-nowrap min-w-max">${tags}</div>
+                            </div>
+                            
+                            <p class="text-gray-700 mt-3 text-base leading-relaxed">${createSafeText(summaryText)}</p>
+                            
+                            ${email.action ? `
+                                <div class="mt-4 bg-orange-50/50 border border-orange-200 rounded-lg p-3">
+                                    <div class="flex items-start">
+                                        <div class="text-orange-500 mt-0.5 mr-2">🔴</div>
+                                        <div>
+                                            <span class="font-bold text-orange-900 text-sm block mb-1">Required Action</span>
+                                            <span class="text-sm text-orange-800">${createSafeText(email.action)}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            ` : ''}
+                            
+                            ${email.why_important && isHigh ? `
+                                <div class="mt-3 text-sm text-gray-500 flex items-start">
+                                    <span class="font-semibold text-gray-600 mr-2">Why it matters:</span>
+                                    <span>${createSafeText(email.why_important)}</span>
+                                </div>
+                            ` : ''}
+                        </div>
+                    `;
+                });
+
+                catHTML += `</div></div>`;
+                container.innerHTML += catHTML;
+            }
+        }
+
+        // Init
+        checkAuthStatus();
+    </script>
+</body>
+</html>

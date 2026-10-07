@@ -1,0 +1,30 @@
+# Environment
+.env
+
+# Google OAuth credentials
+credentials.json
+token.json
+backend/credentials.json
+backend/token.json
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Virtual environment
+venv/
+.venv/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
