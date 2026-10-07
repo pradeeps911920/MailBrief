@@ -1,11 +1,11 @@
-# 📬 MailBrief
+﻿# ðŸ“¬ MailBrief
 ### One brief. Every important email.
 
-**MailBrief** is an AI-powered personal email intelligence system that turns a user's inbox into a concise, actionable briefing—showing what matters, what requires action, and what deadlines are approaching, while keeping sensitive emails away from the AI model.
+**MailBrief** is an AI-powered personal email intelligence system that turns a user's inbox into a concise, actionable briefingâ€”showing what matters, what requires action, and what deadlines are approaching, while keeping sensitive emails away from the AI model.
 
 ---
 
-## ✨ Features
+## âœ¨ Features
 
 - **Privacy-First:** Automatically intercepts and filters out sensitive emails (OTPs, bank alerts, passwords) before they reach the AI model.
 - **AI Summarization:** Uses Google Gemini to read unstructured emails and convert them into structured information such as category, summary, and importance.
@@ -17,37 +17,37 @@
 
 ---
 
-## 🏗️ Architecture
+## ðŸ—ï¸ Architecture
 
 ```text
-                 ┌──────────────┐
-                 │    Gmail     │
-                 └──────┬───────┘
-                        │ OAuth
-                        ▼
-                ┌───────────────┐
-                │ Email Fetcher │
-                └───────┬───────┘
-                        ▼
-                ┌───────────────┐
-                │ Privacy Guard │
-                └───────┬───────┘
-                        ▼
-                ┌───────────────┐
-                │ Gemini / LLM  │
-                └───────┬───────┘
-                        ▼
-                ┌───────────────┐
-                │    SQLite     │
-                └───────┬───────┘
-                        ▼
-                ┌───────────────┐
-                │ Daily Brief   │
-                └───────┬───────┘
-                        ▼
-                ┌───────────────┐
-                │   Dashboard   │
-                └───────────────┘
+                 â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+                 â”‚    Gmail     â”‚
+                 â””â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”˜
+                        â”‚ OAuth
+                        â–¼
+                â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+                â”‚ Email Fetcher â”‚
+                â””â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”˜
+                        â–¼
+                â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+                â”‚ Privacy Guard â”‚
+                â””â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”˜
+                        â–¼
+                â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+                â”‚ Gemini / LLM  â”‚
+                â””â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”˜
+                        â–¼
+                â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+                â”‚    SQLite     â”‚
+                â””â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”˜
+                        â–¼
+                â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+                â”‚ Daily Brief   â”‚
+                â””â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”˜
+                        â–¼
+                â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+                â”‚   Dashboard   â”‚
+                â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 ```
 
 **Tech Stack:**
@@ -60,7 +60,7 @@
 
 ---
 
-## 🚀 Quickstart Setup
+## ðŸš€ Quickstart Setup
 
 ### 1. Google Cloud Setup (Required)
 
@@ -68,11 +68,11 @@ MailBrief requires a Google Cloud project to access Gmail.
 
 1. Go to the [Google Cloud Console](https://console.cloud.google.com/).
 2. Create or select a Google Cloud project (for example, `MailBrief`).
-3. Go to **APIs & Services → Library** and enable the **Gmail API**.
-4. Go to **Google Auth Platform → Audience**.
+3. Go to **APIs & Services â†’ Library** and enable the **Gmail API**.
+4. Go to **Google Auth Platform â†’ Audience**.
 5. Set the publishing status to **Testing** for development.
 6. Add your Gmail address under **Test users**.
-7. Go to **Google Auth Platform → Clients**.
+7. Go to **Google Auth Platform â†’ Clients**.
 8. Create an **OAuth 2.0 Client ID**.
 9. Select **Web application**.
 10. Set the **Authorized redirect URI** to:
@@ -231,7 +231,7 @@ After Gmail is connected:
 
 ---
 
-## 🔄 Normal Startup Workflow
+## ðŸ”„ Normal Startup Workflow
 
 Once MailBrief has been set up already, you **do not need to repeat the entire installation process**.
 
@@ -262,7 +262,7 @@ Those are initial setup steps.
 
 ---
 
-## 🔐 Security Notes
+## ðŸ” Security Notes
 
 Never commit the following files to GitHub:
 
@@ -279,38 +279,38 @@ Make sure they are included in `.gitignore`.
 
 ---
 
-## 📂 Project Structure
+## ðŸ“‚ Project Structure
 
 ```text
 MailBrief/
-│
-├── README.md                  # Project documentation
-├── idea.md                    # Project concept and roadmap
-├── .env.example               # Environment variable template
-├── .gitignore
-│
-├── frontend/
-│   └── index.html             # Web Dashboard UI
-│
-└── backend/
-    ├── main.py                # FastAPI API entry point
-    ├── requirements.txt       # Python dependencies
-    ├── .env                   # Local environment variables
-    ├── credentials.json       # Google OAuth client credentials
-    ├── token.json             # Generated Gmail OAuth token
-    ├── mailbrief.db           # Local SQLite database
-    │
-    ├── auth/                  # Google OAuth flow
-    ├── mail/                  # Email fetching, parsing and privacy filtering
-    ├── ai/                    # Gemini integration and Pydantic schemas
-    ├── database/              # SQLite database models and operations
-    ├── briefing/              # Briefing generation and prioritization
-    └── scheduler/             # Scheduled processing functionality
+â”‚
+â”œâ”€â”€ README.md                  # Project documentation
+â”œâ”€â”€ idea.md                    # Project concept and roadmap
+â”œâ”€â”€ .env.example               # Environment variable template
+â”œâ”€â”€ .gitignore
+â”‚
+â”œâ”€â”€ frontend/
+â”‚   â””â”€â”€ index.html             # Web Dashboard UI
+â”‚
+â””â”€â”€ backend/
+    â”œâ”€â”€ main.py                # FastAPI API entry point
+    â”œâ”€â”€ requirements.txt       # Python dependencies
+    â”œâ”€â”€ .env                   # Local environment variables
+    â”œâ”€â”€ credentials.json       # Google OAuth client credentials
+    â”œâ”€â”€ token.json             # Generated Gmail OAuth token
+    â”œâ”€â”€ mailbrief.db           # Local SQLite database
+    â”‚
+    â”œâ”€â”€ auth/                  # Google OAuth flow
+    â”œâ”€â”€ mail/                  # Email fetching, parsing and privacy filtering
+    â”œâ”€â”€ ai/                    # Gemini integration and Pydantic schemas
+    â”œâ”€â”€ database/              # SQLite database models and operations
+    â”œâ”€â”€ briefing/              # Briefing generation and prioritization
+    â””â”€â”€ scheduler/             # Scheduled processing functionality
 ```
 
 ---
 
-## 🧠 AI Analysis
+## ðŸ§  AI Analysis
 
 MailBrief uses Gemini to convert unstructured email content into structured information.
 
@@ -334,7 +334,7 @@ This makes large volumes of emails easier to understand and act upon.
 
 ---
 
-## 📊 Dashboard
+## ðŸ“Š Dashboard
 
 The MailBrief dashboard provides:
 
@@ -350,7 +350,7 @@ The MailBrief dashboard provides:
 
 ---
 
-## 🧪 Development Notes
+## ðŸ§ª Development Notes
 
 MailBrief is currently designed as an MVP and runs locally using FastAPI and SQLite.
 
@@ -368,26 +368,26 @@ The project can later be extended with:
 
 ---
 
-## 📝 Current Status
+## ðŸ“ Current Status
 
 MailBrief MVP currently supports:
 
-- ✅ Gmail OAuth authentication
-- ✅ Gmail email fetching
-- ✅ Email privacy filtering
-- ✅ Gemini AI analysis
-- ✅ Email categorization
-- ✅ Importance detection
-- ✅ Action extraction
-- ✅ Deadline extraction
-- ✅ SQLite storage
-- ✅ Rule-based prioritization
-- ✅ Web dashboard
-- ✅ Local development workflow
+- âœ… Gmail OAuth authentication
+- âœ… Gmail email fetching
+- âœ… Email privacy filtering
+- âœ… Gemini AI analysis
+- âœ… Email categorization
+- âœ… Importance detection
+- âœ… Action extraction
+- âœ… Deadline extraction
+- âœ… SQLite storage
+- âœ… Rule-based prioritization
+- âœ… Web dashboard
+- âœ… Local development workflow
 
 ---
 
-## 📸 Screenshots
+## ðŸ“¸ Screenshots
 
 Add screenshots here showing:
 
@@ -400,6 +400,6 @@ Add screenshots here showing:
 
 ---
 
-## 📄 License
+## ðŸ“„ License
 
 This project is currently intended for educational and personal development purposes.
